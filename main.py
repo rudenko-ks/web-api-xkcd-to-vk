@@ -1,5 +1,3 @@
-import os
-import datetime
 from pprint import pprint
 import requests
 from environs import Env
@@ -24,23 +22,23 @@ def test_vk_api(vk_client_id: int, vk_access_token: str, vk_group_id: int, vk_al
     api_version = 5.131
     params = {
         "access_token": vk_access_token,
-        "v": api_version
-    }
-    response = requests.get(f"https://api.vk.com/method/groups.get", params=params)
-    response.raise_for_status()
-    vk_groups = response.json()
-    pprint(vk_groups)
-
-    params = {
-        "access_token": vk_access_token,
         "v": api_version,
         "group_id": vk_group_id,
         "album_id": vk_album_id
-    }    
-    response = requests.get(f"https://api.vk.com/method/photos.getUploadServer", params=params)
+    }
+    response = requests.get(f"https://api.vk.com/method/photos.getWallUploadServer", params=params)
     response.raise_for_status()
-    upload_server_info = response.json()
-    pprint(upload_server_info)
+    vk_upload_server_info = response.json()
+    pprint(vk_upload_server_info)
+
+    with open("files/xkcd_353.png", "rb") as file:
+        files = {
+            "photo": file
+        }
+        response = requests.post(vk_upload_server_info["response"]["upload_url"], files=files)
+        response.raise_for_status()
+    vk_comics_upload_info = response.json()
+    pprint(vk_comics_upload_info)
 
 
 def main():
