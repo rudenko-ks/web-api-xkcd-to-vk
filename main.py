@@ -1,5 +1,4 @@
 from pathlib import Path
-from pprint import pprint
 import random
 import requests
 from environs import Env

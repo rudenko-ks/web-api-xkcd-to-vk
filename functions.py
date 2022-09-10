@@ -1,7 +1,5 @@
-import os.path
 from pathlib import Path
 import requests
-import urllib.parse
 
 
 def download_comics(comics_url: str, file_path: str, filename: str) -> Path:
