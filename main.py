@@ -1,16 +1,21 @@
 from pathlib import Path
 from pprint import pprint
+import random
 import requests
 from environs import Env
 from functions import download_comics
 
 
-def get_comics_from_xkcd() -> tuple([Path, str]):
+def get_comics_from_xkcd() -> tuple[Path, str]:
     comics_folder_path = "files"
     comics_name_template = "xkcd"
-    comics_num = 353
-    
-    response = requests.get(f"https://xkcd.com/{comics_num}/info.0.json")
+
+    last_comics = requests.get("https://xkcd.com/info.0.json")
+    last_comics.raise_for_status()
+
+    last_comics_num = last_comics.json()["num"]
+    random_comics = random.randint(0, last_comics_num)
+    response = requests.get(f"https://xkcd.com/{random_comics}/info.0.json")
     response.raise_for_status()
     comics_with_metadata = response.json()
 
@@ -18,6 +23,7 @@ def get_comics_from_xkcd() -> tuple([Path, str]):
     comics_alt = comics_with_metadata["alt"]
     comics_file = download_comics(comics_url, comics_folder_path, f"{comics_name_template}.png")
     return comics_file, comics_alt
+
 
 def get_vk_wall_upload_server_url(vk_access_token: str, vk_group_id: int, vk_api_version: str) -> str:
     params = {
@@ -82,9 +88,6 @@ def main():
     vk_access_token = env("VK_ACCESS_TOKEN")
     vk_group_id = env.int("VK_GROUP_ID")
 
-    comics_folder_path = "files"
-    comics_name_template = "xkcd.png"
-    
     try:
         comics_file, comics_description = get_comics_from_xkcd()
         publish_comics_to_vk(vk_access_token, vk_group_id, comics_file, comics_description)
