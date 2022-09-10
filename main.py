@@ -41,10 +41,25 @@ def upload_photo_to_vk_server(vk_upload_server_url: str) -> dict:
     return response.json()
 
 
+def save_photo_in_vk_group_album(vk_access_token: str, vk_group_id: int, vk_api_version: str, vk_photo_upload_info: dict) -> dict:
+    params = {
+        "access_token": vk_access_token,
+        "group_id": vk_group_id,
+        "photo": vk_photo_upload_info["photo"],
+        "server": vk_photo_upload_info["server"],
+        "hash": vk_photo_upload_info["hash"],
+        "v": vk_api_version,
+    }
+    response = requests.post("https://api.vk.com/method/photos.saveWallPhoto", params=params)
+    response.raise_for_status()
+    return response.json()
+
+
 def publish_comics_to_vk(vk_access_token: str, vk_group_id: int) -> None:
     vk_api_version = "5.131"
     vk_upload_server_url = get_vk_wall_upload_server_url(vk_access_token, vk_group_id, vk_api_version)
     vk_photo_upload_info = upload_photo_to_vk_server(vk_upload_server_url)
+    vk_photo_saving_info = save_photo_in_vk_group_album(vk_access_token, vk_group_id, vk_api_version, vk_photo_upload_info)
 
 
 def main():
