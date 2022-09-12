@@ -34,8 +34,8 @@ pip install -r requirements.txt
 ```
 4. Создайте файл `.env` с переменными окружения. Пример:
 ```
-- VK_ACCESS_TOKEN=<YOUR ACCESS TOKEN>
-- VK_GROUP_ID=<GROUP ID IN VK.COM>
+VK_ACCESS_TOKEN=<YOUR ACCESS TOKEN>
+VK_GROUP_ID=<GROUP ID IN VK.COM>
 ```
 5. Запустите скрипт
 ```
