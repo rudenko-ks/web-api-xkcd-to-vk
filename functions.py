@@ -2,7 +2,7 @@ from pathlib import Path
 import requests
 
 
-def download_comics(comics_url: str, file_path: str, filename: str) -> Path:
+def download_comic(comics_url: str, file_path: str, filename: str) -> Path:
     Path(file_path).mkdir(parents=True, exist_ok=True)
     response = requests.get(comics_url)
     response.raise_for_status()
