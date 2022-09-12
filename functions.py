@@ -7,7 +7,7 @@ def download_comics(comics_url: str, file_path: str, filename: str) -> Path:
     response = requests.get(comics_url)
     response.raise_for_status()
     
-    file = Path(file_path, filename)
-    with open(file, "wb") as img:
-        img.write(response.content)
-    return file
+    filepath = Path(file_path, filename)
+    with open(filepath, "wb") as file:
+        file.write(response.content)
+    return filepath

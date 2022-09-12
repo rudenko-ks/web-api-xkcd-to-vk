@@ -20,8 +20,8 @@ def get_comics_from_xkcd() -> tuple[Path, str]:
 
     comics_url = comics_with_metadata["img"]
     comics_alt = comics_with_metadata["alt"]
-    comics_file = download_comics(comics_url, comics_folder_path, f"{comics_name_template}.png")
-    return comics_file, comics_alt
+    comics_filepath = download_comics(comics_url, comics_folder_path, f"{comics_name_template}.png")
+    return comics_filepath, comics_alt
 
 
 def get_vk_wall_upload_server_url(vk_access_token: str, vk_group_id: int, vk_api_version: str) -> str:
@@ -88,9 +88,9 @@ def main():
     vk_group_id = env.int("VK_GROUP_ID")
 
     try:
-        comics_file, comics_description = get_comics_from_xkcd()
-        publish_comics_to_vk(vk_access_token, vk_group_id, comics_file, comics_description)
-        comics_file.unlink()
+        comics_filepath, comics_description = get_comics_from_xkcd()
+        publish_comics_to_vk(vk_access_token, vk_group_id, comics_filepath, comics_description)
+        comics_filepath.unlink()
     except requests.exceptions.RequestException as error:
         print('Request error:\n', error.response)
         print('Request error text:\n', error.response.text)    
