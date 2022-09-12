@@ -35,36 +35,40 @@ def get_vk_wall_upload_server_url(vk_access_token: str, vk_group_id: int, vk_api
     return response.json()["response"]["upload_url"]
 
 
-def upload_photo_to_vk_server(vk_upload_server_url: str, comic_filepath: Path) -> dict:
+def upload_photo_to_vk_server(vk_upload_server_url: str, comic_filepath: Path) -> tuple[int, str, str]:
     with open(comic_filepath, "rb") as file:
         files = {
             "photo": file
         }
         response = requests.post(vk_upload_server_url, files=files)
         response.raise_for_status()
-    return response.json()
+        vk_photo_upload_info = response.json()
+    return vk_photo_upload_info["photo"], vk_photo_upload_info["server"], vk_photo_upload_info["hash"]
 
 
-def save_photo_in_vk_group_album(vk_access_token: str, vk_group_id: int, vk_api_version: str, vk_photo_upload_info: dict) -> dict:
+def save_photo_in_vk_group_album(vk_access_token: str, vk_group_id: int, vk_api_version: str,
+                                 vk_photo: str, vk_photo_upload_server: int, vk_photo_hash: str) -> tuple[int, int]:
     params = {
         "access_token": vk_access_token,
         "group_id": vk_group_id,
-        "photo": vk_photo_upload_info["photo"],
-        "server": vk_photo_upload_info["server"],
-        "hash": vk_photo_upload_info["hash"],
+        "photo": vk_photo,
+        "server": vk_photo_upload_server,
+        "hash": vk_photo_hash,
         "v": vk_api_version,
     }
     response = requests.post("https://api.vk.com/method/photos.saveWallPhoto", params=params)
     response.raise_for_status()
-    return response.json()
+    vk_photo_saving_info = response.json()
+    return vk_photo_saving_info["response"][0]["owner_id"], vk_photo_saving_info["response"][0]["id"]
 
 
-def post_photo_on_vk_group_wall(vk_access_token: str, vk_group_id: int, vk_api_version: str, vk_photo_saving_info: dict, comic_description: str) -> None:
+def post_photo_on_vk_group_wall(vk_access_token: str, vk_group_id: int, vk_api_version: str,
+                                vk_photo_owner_id: int, vk_photo_id: int, comic_description: str) -> None:
     params = {
         "access_token": vk_access_token,
         "owner_id": -vk_group_id,
         "from_group": 1,
-        "attachments": f'photo{vk_photo_saving_info["response"][0]["owner_id"]}_{vk_photo_saving_info["response"][0]["id"]}',
+        "attachments": f'photo{vk_photo_owner_id}_{vk_photo_id}',
         "message": comic_description,
         "v": vk_api_version,
     }
@@ -75,9 +79,11 @@ def post_photo_on_vk_group_wall(vk_access_token: str, vk_group_id: int, vk_api_v
 def publish_comic_to_vk(vk_access_token: str, vk_group_id: int, comic_filepath: Path, comic_description: str) -> None:
     vk_api_version = "5.131"
     vk_upload_server_url = get_vk_wall_upload_server_url(vk_access_token, vk_group_id, vk_api_version)
-    vk_photo_upload_info = upload_photo_to_vk_server(vk_upload_server_url, comic_filepath)
-    vk_photo_saving_info = save_photo_in_vk_group_album(vk_access_token, vk_group_id, vk_api_version, vk_photo_upload_info)
-    post_photo_on_vk_group_wall(vk_access_token, vk_group_id, vk_api_version, vk_photo_saving_info, comic_description)
+    vk_photo, vk_photo_upload_server, vk_photo_hash = upload_photo_to_vk_server(vk_upload_server_url, comic_filepath)
+    vk_photo_owner_id, vk_photo_id = save_photo_in_vk_group_album(vk_access_token, vk_group_id, vk_api_version,
+                                                                  vk_photo, vk_photo_upload_server, vk_photo_hash)
+    post_photo_on_vk_group_wall(vk_access_token, vk_group_id, vk_api_version,
+                                vk_photo_owner_id, vk_photo_id, comic_description)
 
 
 def main():
